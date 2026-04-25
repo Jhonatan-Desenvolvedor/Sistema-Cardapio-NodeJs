@@ -1,5 +1,11 @@
 # Cardápio Digital - Netlify + Supabase
 
+URL = [sistema-cardapio.netlify.app](https://sistema-cardapio.netlify.app/)
+
+USER = admin@seurestaurante.com
+
+PASS = admin123
+
 Aplicação serverless para cardápio digital com área administrativa, carrinho, pedidos e integração opcional com Mercado Pago.
 
 O projeto roda com:
