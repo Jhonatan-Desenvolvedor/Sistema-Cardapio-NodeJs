@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Sabor & Arte Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <link href="css/dashboard.css" rel="stylesheet" />
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="material-icons-round">restaurant</span>
+    <span>Sabor & Arte</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item active" data-tab="overview">
+      <span class="material-icons-round">dashboard</span>
+      <span>Visão Geral</span>
+    </a>
+    <a href="#" class="nav-item" data-tab="pedidos">
+      <span class="material-icons-round">receipt_long</span>
+      <span>Pedidos</span>
+      <span class="nav-badge" id="navBadgePendentes">0</span>
+    </a>
+    <a href="#" class="nav-item" data-tab="pagamentos">
+      <span class="material-icons-round">payments</span>
+      <span>Aguard. Pagamento</span>
+      <span class="nav-badge" id="navBadgePagamentos" style="background:#f59e0b">0</span>
+    </a>
+    <a href="#" class="nav-item" data-tab="produtos">
+      <span class="material-icons-round">menu_book</span>
+      <span>Cardápio</span>
+    </a>
+    <a href="#" class="nav-item" data-tab="entrega">
+      <span class="material-icons-round">delivery_dining</span>
+      <span>Entrega</span>
+    </a>
+  </nav>
+
+  <!-- Status da Loja -->
+  <div class="loja-status-wrap" id="lojaStatusWrap">
+    <div class="loja-status-info">
+      <span class="loja-status-dot" id="lojaStatusDot"></span>
+      <div>
+        <div class="loja-status-label" id="lojaStatusLabel">Verificando...</div>
+        <div class="loja-status-sub" id="lojaStatusSub">status da loja</div>
+      </div>
+    </div>
+    <button class="loja-toggle-btn" id="lojaToggleBtn" onclick="alternarLoja()">
+      <span class="material-icons-round" id="lojaToggleIcon">toggle_off</span>
+    </button>
+  </div>
+  <!-- Toggle impressão automática -->
+  <div class="auto-print-toggle">
+    <div class="auto-print-info">
+      <span class="material-icons-round">print</span>
+      <div>
+        <div class="auto-print-label">Impressão automática</div>
+        <div class="auto-print-sub" id="autoPrintStatus">Desativada</div>
+      </div>
+    </div>
+    <label class="toggle-switch" title="Ativar impressão automática ao receber pagamento">
+      <input type="checkbox" id="autoImpressaoToggle" onchange="atualizarStatusAutoImpressao(this.checked)" />
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">
+        <span class="material-icons-round">person</span>
+      </div>
+      <div>
+        <div class="user-name" id="userName">Admin</div>
+        <div class="user-role">Administrador</div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="fazerLogout()" title="Sair">
+      <span class="material-icons-round">logout</span>
+    </button>
+  </div>
+</aside>
+
+<!-- MOBILE HEADER -->
+<header class="mobile-header d-lg-none">
+  <button class="btn-menu-mobile" onclick="toggleSidebar()">
+    <span class="material-icons-round">menu</span>
+  </button>
+  <span class="mobile-title">Dashboard</span>
+  <button class="btn-notif">
+    <span class="material-icons-round">notifications</span>
+  </button>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+  <!-- TAB: VISÃO GERAL -->
+  <div id="tab-overview" class="tab-content active">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Visão Geral</h1>
+        <p class="page-sub" id="dataHoje"></p>
+      </div>
+      <button class="btn-refresh" onclick="carregarStats()">
+        <span class="material-icons-round">refresh</span>
+        Atualizar
+      </button>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:linear-gradient(135deg,#C8973A,#E8B865)">
+          <span class="material-icons-round">receipt_long</span>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">Pedidos Hoje</div>
+          <div class="stat-value" id="statPedidosHoje">—</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:linear-gradient(135deg,#22c55e,#4ade80)">
+          <span class="material-icons-round">attach_money</span>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">Receita Hoje</div>
+          <div class="stat-value" id="statReceitaHoje">—</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:linear-gradient(135deg,#3b82f6,#60a5fa)">
+          <span class="material-icons-round">pending</span>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">Em Andamento</div>
+          <div class="stat-value" id="statEmAndamento">—</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">
+          <span class="material-icons-round">hourglass_top</span>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">Aguard. Pagamento</div>
+          <div class="stat-value" id="statAguardando">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÚLTIMOS PEDIDOS -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <h3><span class="material-icons-round">schedule</span> Últimos Pedidos</h3>
+        <button class="btn-link" onclick="mudarTab('pedidos')">Ver todos</button>
+      </div>
+      <div id="ultimosPedidosLista">
+        <div class="loading-rows">
+          <div class="loading-row"></div>
+          <div class="loading-row"></div>
+          <div class="loading-row"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PEDIDOS -->
+  <div id="tab-pedidos" class="tab-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Pedidos</h1>
+        <p class="page-sub" id="pedidosSubtitle">Exibindo pedidos pagos de hoje</p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap align-items-center">
+        <!-- Busca por data -->
+        <div class="date-filter-wrap">
+          <span class="material-icons-round date-icon">calendar_today</span>
+          <input type="date" class="dash-input date-input" id="filtroDataInicio" onchange="carregarPedidos()" />
+          <span class="date-sep">até</span>
+          <input type="date" class="dash-input date-input" id="filtroDataFim" onchange="carregarPedidos()" />
+        </div>
+        <!-- Filtro pagamento -->
+        <select class="form-select form-select-sm filter-select" id="filtroPagamento" onchange="atualizarSubtitle();carregarPedidos()">
+          <option value="pago" selected>✅ Pagos + dinheiro</option>
+          <option value="aguardando">⏳ Aguardando</option>
+          <option value="cancelado">❌ Cancelados</option>
+        </select>
+        <!-- Filtro status preparo -->
+        <select class="form-select form-select-sm filter-select" id="filtroStatus" onchange="carregarPedidos()">
+          <option value="">Todos os status</option>
+          <option value="confirmado">Confirmado</option>
+          <option value="preparando">Preparando</option>
+          <option value="pronto">Pronto</option>
+          <option value="entregue">Entregue</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+        <button class="btn-refresh" onclick="carregarPedidos()">
+          <span class="material-icons-round">refresh</span>
+        </button>
+      </div>
+    </div>
+    <div id="pedidosResumo" class="pedidos-resumo-bar" style="display:none"></div>
+    <div id="pedidosLista"></div>
+  </div>
+
+  <!-- TAB: AGUARDANDO PAGAMENTO -->
+  <div id="tab-pagamentos" class="tab-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Aguardando Pagamento</h1>
+        <p class="page-sub">Pedidos com pagamento pendente</p>
+      </div>
+      <button class="btn-refresh" onclick="carregarPagamentos()">
+        <span class="material-icons-round">refresh</span>
+        Atualizar
+      </button>
+    </div>
+    <div id="pagamentosLista"></div>
+  </div>
+
+  <!-- TAB: PRODUTOS -->
+  <div id="tab-produtos" class="tab-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Cardápio</h1>
+        <p class="page-sub">Gerencie produtos e categorias</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn-refresh" onclick="abrirModalCategoria()">
+          <span class="material-icons-round">category</span>
+          Categorias
+        </button>
+        <button class="btn-primary-action" onclick="abrirModalProduto()">
+          <span class="material-icons-round">add</span>
+          Novo Produto
+        </button>
+      </div>
+    </div>
+    <div id="produtosLista"></div>
+  </div>
+
+  <!-- TAB: ENTREGA -->
+  <div id="tab-entrega" class="tab-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Configurações de Entrega</h1>
+        <p class="page-sub">Taxa por km, área de cobertura e retirada</p>
+      </div>
+      <button class="btn-primary-action" onclick="salvarConfigEntrega()">
+        <span class="material-icons-round">save</span>
+        Salvar configurações
+      </button>
+    </div>
+
+    <div class="row g-4">
+      <!-- Ativar modos -->
+      <div class="col-12 col-md-6">
+        <div class="section-card">
+          <div class="section-card-header">
+            <h3><span class="material-icons-round">toggle_on</span> Modos disponíveis</h3>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+            <div class="entrega-toggle-row">
+              <div>
+                <div class="entrega-toggle-label">
+                  <span class="material-icons-round">delivery_dining</span> Delivery (entrega)
+                </div>
+                <div class="entrega-toggle-sub">Habilitar pedidos com entrega em domicílio</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="cfgEntregaAtiva" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="entrega-toggle-row">
+              <div>
+                <div class="entrega-toggle-label">
+                  <span class="material-icons-round">shopping_bag</span> Retirada no balcão
+                </div>
+                <div class="entrega-toggle-sub">Habilitar opção de retirada pelo cliente</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="cfgRetiradaAtiva" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Taxa por distância — novo modelo -->
+      <div class="col-12 col-md-6">
+        <div class="section-card">
+          <div class="section-card-header">
+            <h3><span class="material-icons-round">straighten</span> Taxa de entrega</h3>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+
+            <!-- Bloco: KM mínimo + taxa mínima -->
+            <div>
+              <div class="taxa-bloco-label">
+                <span class="material-icons-round">radio_button_checked</span>
+                Cobertura mínima
+              </div>
+              <div class="row g-2 mt-1">
+                <div class="col-6">
+                  <label class="form-label">KM mínimo</label>
+                  <div class="input-prefix-wrap">
+                    <span>km</span>
+                    <input type="number" class="form-control dash-input" id="cfgKmMinimo"
+                      step="0.5" min="0.5" placeholder="1"
+                      oninput="atualizarPreviewTaxa()" />
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Taxa mínima (R$)</label>
+                  <div class="input-prefix-wrap">
+                    <span>R$</span>
+                    <input type="number" class="form-control dash-input" id="cfgTaxaMinima"
+                      step="0.50" min="0" placeholder="5.00"
+                      oninput="atualizarPreviewTaxa()" />
+                  </div>
+                </div>
+              </div>
+              <div class="entrega-info-box mt-2" style="padding:8px 12px;font-size:12px">
+                <span class="material-icons-round" style="font-size:16px">info</span>
+                Entregas até <strong id="cfgKmMinimoLabel">1 km</strong> cobram a taxa mínima.
+              </div>
+            </div>
+
+            <div class="taxa-divisor">
+              <span class="material-icons-round">add_circle_outline</span>
+              <span>A partir daí, por km adicional</span>
+            </div>
+
+            <!-- Bloco: taxa por KM adicional -->
+            <div>
+              <div class="taxa-bloco-label">
+                <span class="material-icons-round">add_road</span>
+                KM adicional
+              </div>
+              <div class="row g-2 mt-1">
+                <div class="col-6">
+                  <label class="form-label">Taxa por km extra</label>
+                  <div class="input-prefix-wrap">
+                    <span>R$/km</span>
+                    <input type="number" class="form-control dash-input" id="cfgTaxaKmAdicional"
+                      step="0.50" min="0" placeholder="2.00"
+                      oninput="atualizarPreviewTaxa()" />
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Distância máxima</label>
+                  <div class="input-prefix-wrap">
+                    <span>km</span>
+                    <input type="number" class="form-control dash-input" id="cfgDistMax"
+                      step="1" min="1" placeholder="15"
+                      oninput="atualizarPreviewTaxa()" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pedido mínimo -->
+            <div>
+              <label class="form-label">Valor mínimo do pedido para entrega</label>
+              <div class="input-prefix-wrap" style="max-width:160px">
+                <span>R$</span>
+                <input type="number" class="form-control dash-input" id="cfgPedidoMin"
+                  step="5" min="0" placeholder="20.00" />
+              </div>
+            </div>
+
+            <!-- Preview dinâmico -->
+            <div class="taxa-preview-box" id="cfgTaxaPreviewBox">
+              <div class="taxa-preview-title">
+                <span class="material-icons-round">calculate</span> Simulação de taxas
+              </div>
+              <div id="cfgTaxaPreview" class="taxa-preview-rows"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Localização do restaurante -->
+      <div class="col-12">
+        <div class="section-card">
+          <div class="section-card-header">
+            <h3><span class="material-icons-round">store</span> Localização do restaurante</h3>
+            <small class="text-muted">Ponto de origem para calcular a distância dos clientes</small>
+          </div>
+          <div style="padding:20px">
+
+            <!-- Busca por rua -->
+            <div class="mb-3">
+              <label class="form-label">Buscar rua / endereço</label>
+              <div class="endereco-search-wrap">
+                <input type="text" class="form-control dash-input" id="cfgBuscaEndereco"
+                  placeholder="Ex: Rua das Flores, Rio de Janeiro"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();geocodificarRestaurante()}" />
+                <button class="btn-buscar-end" onclick="geocodificarRestaurante()" id="btnBuscarEnd">
+                  <span class="material-icons-round">search</span>
+                </button>
+                <button class="btn-buscar-end" onclick="usarGPSRestaurante()" id="btnGPSRest" title="Usar minha localização atual" style="background:var(--gold)">
+                  <span class="material-icons-round">my_location</span>
+                </button>
+              </div>
+              <div id="sugestoesRestaurante" class="sugestoes-lista" style="display:none"></div>
+            </div>
+
+            <!-- Número do restaurante (aparece após selecionar a rua) -->
+            <div id="campoNumeroRestaurante" style="display:none" class="mb-3">
+              <label class="form-label">Número do estabelecimento *</label>
+              <div class="row g-2 align-items-end">
+                <div class="col-4">
+                  <input type="text" class="form-control dash-input" id="cfgNumeroRestaurante"
+                    placeholder="123"
+                    oninput="onNumeroRestauranteChange()" />
+                </div>
+                <div class="col-8">
+                  <div id="numeroRestauranteStatus" class="entrega-info-box" style="padding:8px 12px;font-size:12px">
+                    <span class="material-icons-round">info</span>
+                    Digite o número para localização exata
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Endereço confirmado com coords -->
+            <div id="enderecoRestauranteConfirmado" style="display:none" class="endereco-confirmado-box">
+              <span class="material-icons-round">check_circle</span>
+              <div>
+                <div id="enderecoRestauranteTexto" style="font-weight:600;font-size:14px"></div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px" id="coordsRestauranteTexto"></div>
+              </div>
+              <button onclick="limparEnderecoRestaurante()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);margin-left:auto">
+                <span class="material-icons-round" style="font-size:18px">close</span>
+              </button>
+            </div>
+
+            <!-- Campos ocultos das coords -->
+            <input type="hidden" id="cfgLat" />
+            <input type="hidden" id="cfgLng" />
+            <input type="hidden" id="cfgEnderecoRestaurante" />
+
+            <div class="entrega-info-box mt-3">
+              <span class="material-icons-round">info</span>
+              Digite o endereço e selecione o resultado correto. Ou clique no botão GPS para usar sua localização atual.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- OVERLAY SIDEBAR MOBILE -->
+<div class="sidebar-overlay d-lg-none" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- MODAL DETALHE PEDIDO -->
+<div class="modal fade" id="modalPedido" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content modal-dash">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="material-icons-round">receipt_long</span>
+          Detalhes do Pedido
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="pedidoDetalheBody">
+        <!-- Conteúdo dinâmico -->
+      </div>
+      <div class="modal-footer" id="pedidoDetalheFooter"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATEGORIAS -->
+<div class="modal fade" id="modalCategorias" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dash">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="material-icons-round">category</span>
+          Gerenciar Categorias
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Adicionar nova categoria -->
+        <div class="nova-cat-form">
+          <div class="nova-cat-form-title">
+            <span class="material-icons-round">add_circle</span> Nova categoria
+          </div>
+          <div class="row g-2 mt-1">
+            <div class="col-7">
+              <input type="text" class="form-control dash-input" id="novaCatNome"
+                placeholder="Ex: Pizzas, Hambúrgueres..." maxlength="40"
+                onkeydown="if(event.key==='Enter')criarCategoria()" />
+            </div>
+            <div class="col-3">
+              <select class="form-select dash-input" id="novaCatIcone">
+                <option value="restaurant">🍽️ Geral</option>
+                <option value="local_pizza">🍕 Pizza</option>
+                <option value="lunch_dining">🍔 Burguer</option>
+                <option value="ramen_dining">🍜 Massa</option>
+                <option value="set_meal">🥗 Salada</option>
+                <option value="dinner_dining">🥩 Carnes</option>
+                <option value="cake">🎂 Sobremesa</option>
+                <option value="local_bar">🍺 Bebidas</option>
+                <option value="emoji_food_beverage">☕ Café</option>
+                <option value="fastfood">🍟 Fast Food</option>
+                <option value="kebab_dining">🌮 Lanches</option>
+                <option value="icecream">🍦 Sorvetes</option>
+              </select>
+            </div>
+            <div class="col-2">
+              <button class="btn-primary-action w-100" onclick="criarCategoria()" style="padding:10px;justify-content:center">
+                <span class="material-icons-round">add</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de categorias -->
+        <div id="listaCategorias" class="cat-list-wrap">
+          <div class="loading-rows"><div class="loading-row"></div><div class="loading-row"></div></div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR CATEGORIA -->
+<div class="modal fade" id="modalEditarCategoria" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content modal-dash">
+      <div class="modal-header">
+        <h5 class="modal-title"><span class="material-icons-round">edit</span> Editar Categoria</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editCatId" />
+        <div class="mb-3">
+          <label class="form-label">Nome</label>
+          <input type="text" class="form-control dash-input" id="editCatNome" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Ícone</label>
+          <select class="form-select dash-input" id="editCatIcone">
+            <option value="restaurant">🍽️ Geral</option>
+            <option value="local_pizza">🍕 Pizza</option>
+            <option value="lunch_dining">🍔 Burguer</option>
+            <option value="ramen_dining">🍜 Massa</option>
+            <option value="set_meal">🥗 Salada</option>
+            <option value="dinner_dining">🥩 Carnes</option>
+            <option value="cake">🎂 Sobremesa</option>
+            <option value="local_bar">🍺 Bebidas</option>
+            <option value="emoji_food_beverage">☕ Café</option>
+            <option value="fastfood">🍟 Fast Food</option>
+            <option value="kebab_dining">🌮 Lanches</option>
+            <option value="icecream">🍦 Sorvetes</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn-primary-action" onclick="salvarEdicaoCategoria()">
+          <span class="material-icons-round">save</span> Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUTO -->
+<div class="modal fade" id="modalProduto" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-dash">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalProdutoTitulo">
+          <span class="material-icons-round">add_circle</span>
+          Novo Produto
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="produtoId" />
+        <!-- Preview de imagem -->
+        <div id="imgPreviewWrap" style="display:none;margin-bottom:12px;text-align:center">
+          <img id="imgPreview" src="" alt="Preview" style="max-height:140px;border-radius:12px;object-fit:cover;border:2px solid var(--border)" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Imagem do Produto</label>
+          <div class="img-upload-area" id="imgUploadArea" onclick="document.getElementById('produtoImagemFile').click()">
+            <span class="material-icons-round">add_photo_alternate</span>
+            <span id="imgUploadLabel">Clique para escolher uma imagem</span>
+          </div>
+          <input type="file" id="produtoImagemFile" accept="image/*" style="display:none" onchange="previewImagem(this)" />
+          <input type="hidden" id="produtoImagemUrl" />
+          <div class="mt-1 d-flex align-items-center gap-2">
+            <span style="font-size:12px;color:var(--text-muted)">ou cole uma URL:</span>
+            <input type="text" class="form-control dash-input" id="produtoImagemUrlInput" placeholder="https://..." style="font-size:13px;padding:6px 10px" oninput="usarUrlImagem(this.value)" />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Nome *</label>
+          <input type="text" class="form-control dash-input" id="produtoNome" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Descrição</label>
+          <textarea class="form-control dash-input" id="produtoDescricao" rows="2"></textarea>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-3">
+            <label class="form-label">Preço (R$) *</label>
+            <input type="number" class="form-control dash-input" id="produtoPreco" step="0.01" min="0" />
+          </div>
+          <div class="col-6 mb-3">
+            <label class="form-label">Categoria</label>
+            <select class="form-select dash-input" id="produtoCategoria"></select>
+          </div>
+        </div>
+        <div class="d-flex gap-4">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="produtoDisponivel" checked />
+            <label class="form-check-label" for="produtoDisponivel">Disponível</label>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="produtoDestaque" />
+            <label class="form-check-label" for="produtoDestaque">Destaque</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn-primary-action" onclick="salvarProduto()">
+          <span class="material-icons-round">save</span>
+          Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

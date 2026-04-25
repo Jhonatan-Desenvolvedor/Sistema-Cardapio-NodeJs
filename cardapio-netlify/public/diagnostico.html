@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnóstico — Cardápio Digital</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <style>
+    body { font-family: monospace; background: #1a1a2e; color: #e0e0e0; margin: 0; padding: 20px; }
+    h1 { color: #C8973A; font-size: 20px; margin-bottom: 20px; }
+    .card { background: #16213e; border-radius: 12px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #444; }
+    .card.ok { border-color: #22c55e; }
+    .card.erro { border-color: #ef4444; }
+    .card.loading { border-color: #f59e0b; }
+    .label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: #888; margin-bottom: 8px; }
+    .status { font-size: 16px; font-weight: bold; margin-bottom: 6px; }
+    .detail { font-size: 13px; color: #aaa; white-space: pre-wrap; word-break: break-all; }
+    .btn { background: #C8973A; border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: monospace; font-size: 14px; margin-top: 16px; }
+    .btn:hover { background: #E8B865; }
+  </style>
+</head>
+<body>
+<h1>🔍 Diagnóstico do Sistema</h1>
+
+<div class="card loading" id="card-api">
+  <div class="label">API /api/cardapio</div>
+  <div class="status" id="api-status">Testando...</div>
+  <div class="detail" id="api-detail"></div>
+</div>
+
+<div class="card loading" id="card-auth">
+  <div class="label">AUTH /auth/me</div>
+  <div class="status" id="auth-status">Testando...</div>
+  <div class="detail" id="auth-detail"></div>
+</div>
+
+<div class="card loading" id="card-env">
+  <div class="label">Variáveis de Ambiente (via API)</div>
+  <div class="status" id="env-status">Testando...</div>
+  <div class="detail" id="env-detail"></div>
+</div>
+
+<button class="btn" onclick="rodarDiagnostico()">🔄 Rodar novamente</button>
+<button class="btn" style="background:#3b82f6;margin-left:10px" onclick="window.location.href='/'">← Ir para o Cardápio</button>
+
+<script>
+async function testar(url, opts = {}) {
+  try {
+    const r = await fetch(url, opts);
+    const text = await r.text();
+    let json;
+    try { json = JSON.parse(text); } catch(e) { json = text; }
+    return { ok: r.ok, status: r.status, body: json };
+  } catch(e) {
+    return { ok: false, status: 0, body: e.message };
+  }
+}
+
+function setCard(id, ok, status, detail) {
+  const card = document.getElementById(`card-${id}`);
+  card.className = `card ${ok ? 'ok' : 'erro'}`;
+  document.getElementById(`${id}-status`).textContent = ok ? `✅ ${status}` : `❌ ${status}`;
+  document.getElementById(`${id}-detail`).textContent = typeof detail === 'object' ? JSON.stringify(detail, null, 2) : detail;
+}
+
+async function rodarDiagnostico() {
+  ['api','auth','env'].forEach(id => {
+    document.getElementById(`card-${id}`).className = 'card loading';
+    document.getElementById(`${id}-status`).textContent = 'Testando...';
+    document.getElementById(`${id}-detail`).textContent = '';
+  });
+
+  // Teste 1: API cardápio
+  const api = await testar('/api/cardapio');
+  if (api.ok && api.body?.categorias) {
+    const cats = api.body.categorias.length;
+    const prods = api.body.categorias.reduce((s, c) => s + (c.produtos?.length || 0), 0);
+    setCard('api', true, `OK — ${cats} categoria(s), ${prods} produto(s)`, api.body.configuracoes);
+  } else {
+    setCard('api', false, `HTTP ${api.status}`, api.body);
+    // Verificar se é erro de config
+    if (api.body?.erro?.includes('SUPABASE')) {
+      setCard('env', false, 'Variáveis não configuradas', 
+        '⚠️  Você precisa configurar no Netlify:\n\nSite Settings → Environment Variables\n\n• SUPABASE_URL\n• SUPABASE_SERVICE_KEY\n• JWT_SECRET\n\nUSE a "service_role" key, NÃO a "anon/publishable" key!');
+      setCard('auth', false, 'Depende do Supabase', 'Configure as variáveis primeiro');
+      return;
+    }
+  }
+
+  // Teste 2: Auth
+  const auth = await testar('/auth/me');
+  setCard('auth', auth.status === 401 || auth.ok,
+    auth.status === 401 ? 'OK (não autenticado, esperado)' : auth.ok ? 'OK' : `HTTP ${auth.status}`,
+    auth.body);
+
+  // Teste 3: Env info via rota que retorna diagnóstico
+  const envCheck = await testar('/api/cardapio');
+  if (envCheck.ok) {
+    setCard('env', true, 'Variáveis configuradas corretamente!',
+      'SUPABASE_URL: ✅ configurada\nSUPABASE_SERVICE_KEY: ✅ configurada\n\nSe o cardápio não aparece, o SQL Schema pode não ter sido executado no Supabase.');
+  } else if (envCheck.body?.erro?.includes('SUPABASE')) {
+    setCard('env', false, 'Variáveis NÃO configuradas', 
+      '⚠️  Acesse: Netlify → Site Settings → Environment Variables\n\nAdicione:\n  SUPABASE_URL = https://xxxx.supabase.co\n  SUPABASE_SERVICE_KEY = eyJ... (service_role key)\n  JWT_SECRET = qualquer_texto_longo\n\n⚠️  IMPORTANTE: Use a "service_role" key!\n   NÃO use a "anon" ou "publishable" key!');
+  }
+}
+
+rodarDiagnostico();
+</script>
+</body>
+</html>

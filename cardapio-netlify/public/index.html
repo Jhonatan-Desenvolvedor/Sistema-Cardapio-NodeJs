@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Big Dinho Lanches — Cardápio Digital</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <link href="css/cardapio.css" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════════════════ -->
+<nav class="navbar-custom sticky-top">
+  <div class="container-xl d-flex align-items-center justify-content-between">
+    <!-- Logo -->
+    <div class="brand-logo-wrap">
+      <div class="brand-logo-circle" id="logoCircle">
+        <img src="img/logo.png" alt="Big Dinho" id="logoImg" onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'" />
+        <div id="logoFallback" style="display:none" class="logo-fallback">
+          <span class="material-icons-round">lunch_dining</span>
+        </div>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">Big Dinho</span>
+        <span class="brand-sub">Lanches</span>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="d-flex align-items-center gap-2">
+      <div class="loja-badge" id="lojaBadgeNav">
+        <span class="loja-dot"></span>
+        <span class="loja-txt">Aberto</span>
+      </div>
+      <button class="btn-carrinho" onclick="abrirCarrinho()">
+        <span class="material-icons-round">shopping_bag</span>
+        <span class="badge-carrinho" id="badgeCarrinho">0</span>
+      </button>
+      <a href="/login" class="btn-admin-nav" title="Área Admin">
+        <span class="material-icons-round">lock</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════
+     HERO / BANNER
+══════════════════════════════════════════════════ -->
+<section class="hero-section">
+  <!-- Banner image area -->
+  <div class="hero-banner-wrap">
+    <img src="img/banner.jpg" alt="Big Dinho Lanches" id="heroBanner"
+      onerror="this.style.display='none'" class="hero-banner-img" />
+    <div class="hero-overlay"></div>
+  </div>
+
+  <div class="hero-content container-xl">
+    <div class="hero-badge-fire">🔥 Os melhores lanches da cidade</div>
+    <h1 class="hero-title">
+      <span class="hero-title-big">BIG DINHO</span>
+      <span class="hero-title-sub">LANCHES</span>
+    </h1>
+    <p class="hero-desc">Hambúrgueres artesanais, batatas crocantes<br>e muito sabor em cada mordida!</p>
+    <div class="hero-cta-wrap">
+      <button class="btn-hero-cta" onclick="document.getElementById('cardapio').scrollIntoView({behavior:'smooth'})">
+        <span class="material-icons-round">menu_book</span>
+        Ver Cardápio
+      </button>
+      <button class="btn-hero-ghost" onclick="abrirCarrinho()">
+        <span class="material-icons-round">shopping_bag</span>
+        Meu Pedido
+      </button>
+    </div>
+  </div>
+
+  <!-- Info rápida -->
+  <div class="hero-info-bar">
+    <div class="container-xl">
+      <div class="hero-info-items">
+        <div class="hero-info-item">
+          <span class="material-icons-round">location_on</span>
+          <span>Rua das Flores, 123 — Centro</span>
+        </div>
+        <div class="hero-info-divider"></div>
+        <div class="hero-info-item">
+          <span class="material-icons-round">schedule</span>
+          <span>Seg–Sex: 11h–23h &nbsp;|&nbsp; Sáb–Dom: 11h–00h</span>
+        </div>
+        <div class="hero-info-divider"></div>
+        <div class="hero-info-item">
+          <span class="material-icons-round">phone</span>
+          <span>(21) 99999-9999</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     BANNER LOJA FECHADA
+══════════════════════════════════════════════════ -->
+
+<!-- ══════════════════════════════════════════════════
+     CATEGORIAS (PILLS)
+══════════════════════════════════════════════════ -->
+<div class="cat-pills-wrapper sticky-top" id="catPills">
+  <div class="container-xl">
+    <div class="cat-pills" id="catPillsInner">
+      <button class="cat-pill active" data-cat="all">
+        <span class="material-icons-round">grid_view</span>
+        <span>Todos</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     CARDÁPIO
+══════════════════════════════════════════════════ -->
+<main class="container-xl py-4" id="cardapio">
+  <div id="loadingState" class="loading-state">
+    <div class="loading-burger">🍔</div>
+    <p>Carregando cardápio...</p>
+  </div>
+  <div id="cardapioContent"></div>
+</main>
+
+<!-- ══════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="container-xl">
+    <div class="footer-grid">
+      <!-- Logo + desc -->
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <span class="material-icons-round">lunch_dining</span>
+          <span>Big Dinho Lanches</span>
+        </div>
+        <p>O melhor hambúrguer artesanal da região. Feito com ingredientes frescos e muito amor! 🍔</p>
+      </div>
+      <!-- Horários -->
+      <div class="footer-col">
+        <div class="footer-col-title">
+          <span class="material-icons-round">schedule</span> Horários
+        </div>
+        <ul class="footer-list">
+          <li><span>Segunda a Sexta</span><strong>11h às 23h</strong></li>
+          <li><span>Sábado</span><strong>11h às 00h</strong></li>
+          <li><span>Domingo</span><strong>11h às 00h</strong></li>
+        </ul>
+      </div>
+      <!-- Endereço -->
+      <div class="footer-col">
+        <div class="footer-col-title">
+          <span class="material-icons-round">location_on</span> Onde estamos
+        </div>
+        <ul class="footer-list">
+          <li><span>Rua das Flores, 123</span></li>
+          <li><span>Centro — Rio de Janeiro</span></li>
+          <li><span>CEP: 20040-020</span></li>
+        </ul>
+        <div class="footer-contact">
+          <span class="material-icons-round">phone</span>
+          <span>(21) 99999-9999</span>
+        </div>
+        <div class="footer-contact">
+          <span class="material-icons-round">pix</span>
+          <span>Aceitamos PIX, cartão e dinheiro</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Big Dinho Lanches · Todos os direitos reservados</span>
+      <a href="/login" class="footer-admin-link">
+        <span class="material-icons-round">lock</span> Área Admin
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════════════════════════════════════════════
+     CARRINHO SIDEBAR
+══════════════════════════════════════════════════ -->
+<div class="carrinho-overlay" id="carrinhoOverlay" onclick="fecharCarrinho()"></div>
+<div class="carrinho-sidebar" id="carrinhoSidebar">
+  <div class="carrinho-header">
+    <h5><span class="material-icons-round">shopping_bag</span> Meu Pedido</h5>
+    <button onclick="fecharCarrinho()" class="btn-close-carrinho">
+      <span class="material-icons-round">close</span>
+    </button>
+  </div>
+  <div class="carrinho-body" id="carrinhoItens">
+    <div class="carrinho-vazio">
+      <div class="carrinho-vazio-emoji">🍔</div>
+      <p>Seu carrinho está vazio</p>
+      <small>Adicione itens do cardápio</small>
+    </div>
+  </div>
+  <div class="carrinho-footer" id="carrinhoFooter" style="display:none">
+    <div class="resumo-valores">
+      <div class="d-flex justify-content-between">
+        <span>Subtotal</span>
+        <span id="subtotalValor">R$ 0,00</span>
+      </div>
+      <div class="d-flex justify-content-between fw-bold total-row">
+        <span>Total</span>
+        <span id="totalValor">R$ 0,00</span>
+      </div>
+    </div>
+    <button class="btn-finalizar" onclick="abrirCheckout()">
+      <span class="material-icons-round">payment</span>
+      Finalizar Pedido
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     MODAL CHECKOUT
+══════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalCheckout" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-custom">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title">
+          <span class="material-icons-round text-accent">receipt_long</span>
+          Finalizar Pedido
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="checkoutBody">
+
+        <!-- Tipo de entrega -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Como deseja receber?</label>
+          <div class="tipo-entrega-opts" id="tipoEntregaOpts">
+            <label class="tipo-opt active" id="optLocal">
+              <input type="radio" name="tipoEntrega" value="local" checked onchange="mudarTipoEntrega('local')"/>
+              <span class="material-icons-round">restaurant</span>
+              <div><strong>Comer aqui</strong><small>Mesa no local</small></div>
+            </label>
+            <label class="tipo-opt" id="optRetirada">
+              <input type="radio" name="tipoEntrega" value="retirada" onchange="mudarTipoEntrega('retirada')"/>
+              <span class="material-icons-round">shopping_bag</span>
+              <div><strong>Retirar</strong><small>No balcão</small></div>
+            </label>
+            <label class="tipo-opt" id="optDelivery">
+              <input type="radio" name="tipoEntrega" value="delivery" onchange="mudarTipoEntrega('delivery')"/>
+              <span class="material-icons-round">delivery_dining</span>
+              <div><strong>Delivery</strong><small>Em casa</small></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Dados -->
+        <div class="mb-3">
+          <label class="form-label">Seu nome *</label>
+          <input type="text" class="form-control form-control-custom" id="clienteNome" placeholder="Nome completo" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Telefone / WhatsApp *</label>
+          <input type="tel" class="form-control form-control-custom" id="clienteTelefone" placeholder="(21) 99999-9999" required />
+        </div>
+
+        <!-- Mesa (local) -->
+        <div class="mb-3" id="campoMesa">
+          <label class="form-label">Mesa (opcional)</label>
+          <input type="text" class="form-control form-control-custom" id="clienteMesa" placeholder="Ex: Mesa 5" />
+        </div>
+
+        <!-- Endereço delivery -->
+        <div id="campoEntrega" style="display:none">
+          <div class="entrega-section">
+            <div class="entrega-section-title">
+              <span class="material-icons-round">location_on</span>
+              Endereço de entrega
+            </div>
+            <button type="button" class="btn-usar-gps" onclick="usarLocalizacaoGPS()" id="btnGPS">
+              <span class="material-icons-round">my_location</span>
+              Usar minha localização atual (GPS)
+            </button>
+            <div class="mt-2 mb-1">
+              <label class="form-label">Buscar endereço</label>
+              <div class="addr-search-wrap">
+                <span class="material-icons-round addr-icon">search</span>
+                <input type="text" class="form-control form-control-custom addr-input"
+                  id="buscaEnderecoEntrega"
+                  placeholder="Digite rua, bairro ou cidade..."
+                  oninput="debounceSearchEndereco(this.value)"
+                  onkeydown="if(event.key==='Escape')fecharSugestoes()" />
+              </div>
+              <div id="sugestoesEntrega" class="sugestoes-lista-cliente" style="display:none"></div>
+            </div>
+            <div id="enderecoSelecionado" style="display:none">
+              <div class="endereco-selecionado-box" id="enderecoSelecionadoBox"></div>
+              <div class="row g-2 mt-2">
+                <div class="col-5">
+                  <label class="form-label">Número *</label>
+                  <input type="text" class="form-control form-control-custom" id="numeroEntrega"
+                    placeholder="123" oninput="onNumeroChange()" />
+                </div>
+                <div class="col-7">
+                  <label class="form-label">Complemento</label>
+                  <input type="text" class="form-control form-control-custom" id="complementoEntrega"
+                    placeholder="Apto 12, Bloco B" />
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="ruaEntrega" />
+            <input type="hidden" id="bairroEntrega" />
+            <input type="hidden" id="cepEntrega" />
+            <input type="hidden" id="latEntrega" />
+            <input type="hidden" id="lngEntrega" />
+            <div id="taxaEntregaPreview" class="taxa-preview" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- Observações -->
+        <div class="mb-3">
+          <label class="form-label">Observações</label>
+          <textarea class="form-control form-control-custom" id="observacoes" rows="2" placeholder="Sem cebola, molho à parte..."></textarea>
+        </div>
+
+        <!-- Pagamento -->
+        <div class="mb-3">
+          <label class="form-label">Forma de Pagamento</label>
+          <div class="payment-options" id="paymentOptions">
+            <label class="payment-opt active">
+              <input type="radio" name="pagamento" value="pix" checked />
+              <span class="material-icons-round">pix</span>
+              <span>PIX</span>
+            </label>
+            <label class="payment-opt">
+              <input type="radio" name="pagamento" value="cartao" />
+              <span class="material-icons-round">credit_card</span>
+              <span>Cartão</span>
+            </label>
+            <label class="payment-opt">
+              <input type="radio" name="pagamento" value="dinheiro" />
+              <span class="material-icons-round">payments</span>
+              <span>Dinheiro</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Resumo -->
+        <div class="checkout-total-resumo" id="checkoutTotalResumo">
+          <div class="d-flex justify-content-between"><span>Subtotal</span><span id="ckSubtotal">—</span></div>
+          <div class="d-flex justify-content-between text-muted small" id="ckEntregaRow" style="display:none!important">
+            <span>Taxa de entrega</span><span id="ckEntrega">—</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold" style="border-top:1px solid var(--border);padding-top:8px;margin-top:8px;font-size:17px">
+            <span>Total</span><span id="ckTotal">—</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn-finalizar w-auto px-4" onclick="confirmarPedido()">
+          <span class="material-icons-round">check_circle</span>
+          Confirmar Pedido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUCESSO -->
+<div class="modal fade" id="modalSucesso" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-custom text-center p-4">
+      <div class="sucesso-icon">
+        <span class="material-icons-round">check_circle</span>
+      </div>
+      <h4 class="mt-3 fw-bold">Pedido Realizado! 🍔</h4>
+      <p class="text-muted" id="sucessoMsg">Seu pedido foi recebido com sucesso.</p>
+      <div class="codigo-pedido" id="codigoPedido"></div>
+      <div id="mpButton" class="mt-3"></div>
+      <button class="btn-finalizar mt-3" data-bs-dismiss="modal" onclick="limparCarrinho()">
+        <span class="material-icons-round">home</span>
+        Voltar ao Cardápio
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/cardapio.js"></script>
+</body>
+</html>

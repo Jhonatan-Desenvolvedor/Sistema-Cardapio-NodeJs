@@ -1,0 +1,14 @@
+{
+  "name": "cardapio-digital-netlify",
+  "version": "1.0.0",
+  "description": "Cardápio Digital - Netlify + Supabase",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'ok'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "bcryptjs": "^2.4.3",
+    "mercadopago": "^2.0.6"
+  }
+}
